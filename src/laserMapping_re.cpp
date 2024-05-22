@@ -571,7 +571,7 @@ int main(int argc, char **argv)
     state_point = kf.get_x();
     state_point.pos = Eigen::Vector3d(init_pos[0], init_pos[1], init_pos[2]);
     Eigen::Quaterniond q(init_rot[3], init_rot[0], init_rot[1], init_rot[2]);
-    Sophus::SO3 SO3_q(q);
+    Sophus::SO3d SO3_q(q);
     state_point.rot = SO3_q;
     kf.change_x(state_point);
 
