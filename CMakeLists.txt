@@ -55,7 +55,7 @@ find_package(catkin REQUIRED COMPONENTS
 
 find_package(Eigen3 REQUIRED)
 find_package(PCL 1.8 REQUIRED)
-find_package( Sophus REQUIRED )
+find_package(Sophus REQUIRED)
 
 message(Eigen: ${EIGEN3_INCLUDE_DIR})
 
@@ -84,9 +84,9 @@ catkin_package(
 )
 
 add_executable(fastlio_mapping src/laserMapping.cpp include/ikd-Tree/ikd_Tree.cpp src/preprocess.cpp)
-target_link_libraries(fastlio_mapping ${catkin_LIBRARIES} ${PCL_LIBRARIES} ${PYTHON_LIBRARIES} ${Sophus_LIBRARIES})
+target_link_libraries(fastlio_mapping ${catkin_LIBRARIES} ${PCL_LIBRARIES} ${PYTHON_LIBRARIES} Sophus::Sophus})
 target_include_directories(fastlio_mapping PRIVATE ${PYTHON_INCLUDE_DIRS})
 
 add_executable(fastlio_mapping_re src/laserMapping_re.cpp include/ikd-Tree/ikd_Tree.cpp src/preprocess.cpp)
-target_link_libraries(fastlio_mapping_re ${catkin_LIBRARIES} ${PCL_LIBRARIES} ${PYTHON_LIBRARIES} ${Sophus_LIBRARIES})
+target_link_libraries(fastlio_mapping_re ${catkin_LIBRARIES} ${PCL_LIBRARIES} ${PYTHON_LIBRARIES} Sophus::Sophus)
 target_include_directories(fastlio_mapping_re PRIVATE ${PYTHON_INCLUDE_DIRS})
