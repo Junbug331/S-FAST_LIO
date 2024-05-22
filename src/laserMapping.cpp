@@ -631,7 +631,7 @@ int main(int argc, char **argv)
 
             p_imu1->Process(Measures, kf, feats_undistort);
 
-            //如果feats_undistort为空 ROS_WARN
+            // If feats_undistort is empty, ROS_WARN
             if (feats_undistort->empty() || (feats_undistort == NULL))
             {
                 ROS_WARN("No point, skip this scan!\n");
