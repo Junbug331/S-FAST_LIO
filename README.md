@@ -34,11 +34,9 @@ Follow [livox_ros_driver Installation](https://github.com/Livox-SDK/livox_ros_dr
 Source：Add the line ``` source $Licox_ros_driver_dir$/devel/setup.bash ``` to the end of file ``` ~/.bashrc ```, where ``` $Licox_ros_driver_dir$ ``` is the directory of the livox ros driver workspace (should be the ``` ws_livox ``` directory if you completely followed the livox official document).
 
 ### 1.4. **Sophus**
-We use the old version of Sophus
 ```
 git clone https://github.com/strasdat/Sophus.git
 cd Sophus
-git checkout a621ff
 mkdir build
 cd build
 cmake ../ -DUSE_BASIC_LOGGING=ON
