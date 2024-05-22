@@ -505,42 +505,43 @@ int main(int argc, char **argv)
     ros::NodeHandle nh;
 
     nh.param<bool>("publish/path_en", path_en, true);
-    nh.param<bool>("publish/scan_publish_en", scan_pub_en, true);            // 是否发布当前正在扫描的点云的topic
-    nh.param<bool>("publish/dense_publish_en", dense_pub_en, true);          // 是否发布经过运动畸变校正注册到IMU坐标系的点云的topic
-    nh.param<bool>("publish/scan_bodyframe_pub_en", scan_body_pub_en, true); // 是否发布经过运动畸变校正注册到IMU坐标系的点云的topic，需要该变量和上一个变量同时为true才发布
-    nh.param<int>("max_iteration", NUM_MAX_ITERATIONS, 4);                   // 卡尔曼滤波的最大迭代次数
-    nh.param<string>("map_file_path", map_file_path, "");                    // 地图保存路径
-    nh.param<string>("common/lid_topic", lid_topic, "/livox/lidar");         // 雷达点云topic名称
-    nh.param<string>("common/imu_topic", imu_topic, "/livox/imu");           // IMU的topic名称
-    nh.param<bool>("common/time_sync_en", time_sync_en, false);              // 是否需要时间同步，只有当外部未进行时间同步时设为true
+    nh.param<bool>("publish/scan_publish_en", scan_pub_en, true);            // Whether to publish the current scanning point cloud topic
+    nh.param<bool>("publish/dense_publish_en", dense_pub_en, true);          // Whether to publish the point cloud topic that has been corrected and registered to the IMU coordinate system
+    nh.param<bool>("publish/scan_bodyframe_pub_en", scan_body_pub_en, true); // Whether to publish the point cloud topic that has been corrected and registered to the IMU coordinate system, this variable and the previous variable both need to be true to publish
+    nh.param<int>("max_iteration", NUM_MAX_ITERATIONS, 4);                   // The maximum number of iterations for the Kalman filter
+    nh.param<string>("map_file_path", map_file_path, "");                    // Map save path
+    nh.param<string>("common/lid_topic", lid_topic, "/livox/lidar");         // Lidar point cloud topic name
+    nh.param<string>("common/imu_topic", imu_topic, "/livox/imu");           // IMU topic name
+    nh.param<bool>("common/time_sync_en", time_sync_en, false);              // Whether time synchronization is needed, set to true only if time synchronization is not done externally
     nh.param<double>("common/time_offset_lidar_to_imu", time_diff_lidar_to_imu, 0.0);
-    nh.param<double>("filter_size_corner", filter_size_corner_min, 0.5); // VoxelGrid降采样时的体素大小
+    nh.param<double>("filter_size_corner", filter_size_corner_min, 0.5); // VoxelGrid downsampling voxel size
     nh.param<double>("filter_size_surf", filter_size_surf_min, 0.5);
     nh.param<double>("filter_size_map", filter_size_map_min, 0.5);
-    nh.param<double>("cube_side_length", cube_len, 200);    // 地图的局部区域的长度（FastLio2论文中有解释）
-    nh.param<float>("mapping/det_range", DET_RANGE, 300.f); // 激光雷达的最大探测范围
+    nh.param<double>("cube_side_length", cube_len, 200);    // The length of the local area of the map (explained in the FastLio2 paper)
+    nh.param<float>("mapping/det_range", DET_RANGE, 300.f); // The maximum detection range of the lidar
     nh.param<double>("mapping/fov_degree", fov_deg, 180);
-    nh.param<double>("mapping/gyr_cov", gyr_cov, 0.1);               // IMU陀螺仪的协方差
-    nh.param<double>("mapping/acc_cov", acc_cov, 0.1);               // IMU加速度计的协方差
-    nh.param<double>("mapping/b_gyr_cov", b_gyr_cov, 0.0001);        // IMU陀螺仪偏置的协方差
-    nh.param<double>("mapping/b_acc_cov", b_acc_cov, 0.0001);        // IMU加速度计偏置的协方差
-    nh.param<double>("preprocess/blind", p_pre->blind, 0.01);        // 最小距离阈值，即过滤掉0～blind范围内的点云
-    nh.param<int>("preprocess/lidar_type", p_pre->lidar_type, AVIA); // 激光雷达的类型
-    nh.param<int>("preprocess/scan_line", p_pre->N_SCANS, 16);       // 激光雷达扫描的线数（livox avia为6线）
+    nh.param<double>("mapping/gyr_cov", gyr_cov, 0.1);               // IMU gyroscope covariance
+    nh.param<double>("mapping/acc_cov", acc_cov, 0.1);               // IMU accelerometer covariance
+    nh.param<double>("mapping/b_gyr_cov", b_gyr_cov, 0.0001);        // IMU gyroscope bias covariance
+    nh.param<double>("mapping/b_acc_cov", b_acc_cov, 0.0001);        // IMU accelerometer bias covariance
+    nh.param<double>("preprocess/blind", p_pre->blind, 0.01);        // Minimum distance threshold, i.e., filter out points within the 0 to blind range
+    nh.param<int>("preprocess/lidar_type", p_pre->lidar_type, AVIA); // Lidar type
+    nh.param<int>("preprocess/scan_line", p_pre->N_SCANS, 16);       // Number of lidar scan lines (Livox Avia has 6 lines)
     nh.param<int>("preprocess/timestamp_unit", p_pre->time_unit, US);
     nh.param<int>("preprocess/scan_rate", p_pre->SCAN_RATE, 10);
-    nh.param<int>("point_filter_num", p_pre->point_filter_num, 2);           // 采样间隔，即每隔point_filter_num个点取1个点
-    nh.param<bool>("feature_extract_enable", p_pre->feature_enabled, false); // 是否提取特征点（FAST_LIO2默认不进行特征点提取）
+    nh.param<int>("point_filter_num", p_pre->point_filter_num, 2);           // Sampling interval, i.e., take 1 point every point_filter_num points
+    nh.param<bool>("feature_extract_enable", p_pre->feature_enabled, false); // Whether to extract feature points (FAST_LIO2 does not extract feature points by default)
     nh.param<bool>("mapping/extrinsic_est_en", extrinsic_est_en, true);
-    nh.param<bool>("pcd_save/pcd_save_en", pcd_save_en, false); // 是否将点云地图保存到PCD文件
-    nh.param<vector<double>>("mapping/extrinsic_T", extrinT, vector<double>()); // 雷达相对于IMU的外参T（即雷达在IMU坐标系中的坐标）
-    nh.param<vector<double>>("mapping/extrinsic_R", extrinR, vector<double>()); // 雷达相对于IMU的外参R
+    nh.param<bool>("pcd_save/pcd_save_en", pcd_save_en, false); // Whether to save the point cloud map to a PCD file
+    nh.param<vector<double>>("mapping/extrinsic_T", extrinT, vector<double>()); // Extrinsic translation of lidar relative to IMU (i.e., the coordinates of the lidar in the IMU coordinate system)
+    nh.param<vector<double>>("mapping/extrinsic_R", extrinR, vector<double>()); // Extrinsic rotation of lidar relative to IMU
 
-    nh.param<vector<double>>("mapping/init_pos", init_pos, vector<double>()); // 雷达相对于IMU的外参T（即雷达在IMU坐标系中的坐标）
-    nh.param<vector<double>>("mapping/init_rot", init_rot, vector<double>()); // 雷达相对于IMU的外参R
+    nh.param<vector<double>>("mapping/init_pos", init_pos, vector<double>()); // Initial position of lidar relative to IMU
+    nh.param<vector<double>>("mapping/init_rot", init_rot, vector<double>()); // Initial rotation of lidar relative to IMU
+
 
     cout << "Lidar_type: " << p_pre->lidar_type << endl;
-    // 初始化path的header（包括时间戳和帧id），path用于保存odemetry的路径
+    // Initialize the header of path (including timestamp and frame id), path is used to save the path of odemetry.
     path.header.stamp = ros::Time::now();
     path.header.frame_id = "camera_init";
 
@@ -566,7 +567,7 @@ int main(int argc, char **argv)
     signal(SIGINT, SigHandle);
     ros::Rate rate(5000);
 
-    init_ikdtree(); //读取点云文件 初始化ikdtree
+    init_ikdtree(); //Read point cloud file and initialize ikdtree
 
     state_point = kf.get_x();
     state_point.pos = Eigen::Vector3d(init_pos[0], init_pos[1], init_pos[2]);
@@ -581,7 +582,7 @@ int main(int argc, char **argv)
             break;
         ros::spinOnce();
 
-        if (sync_packages(Measures)) //把一次的IMU和LIDAR数据打包到Measures
+        if (sync_packages(Measures)) // Pack primary IMU and LIDAR data into Measures
         {
             double t00 = omp_get_wtime();
 
@@ -608,7 +609,7 @@ int main(int argc, char **argv)
 
             p_imu1->Process(Measures, kf, feats_undistort);
 
-            //如果feats_undistort为空 ROS_WARN
+            //If feats_undistort is empty, ROS_WARN
             if (feats_undistort->empty() || (feats_undistort == NULL))
             {
                 ROS_WARN("No point, skip this scan!\n");
@@ -620,9 +621,9 @@ int main(int argc, char **argv)
 
             flg_EKF_inited = (Measures.lidar_beg_time - first_lidar_time) < INIT_TIME ? false : true;
 
-            lasermap_fov_segment(); //更新localmap边界，然后降采样当前帧点云
+            lasermap_fov_segment(); //Update the localmap boundary and then downsample the current frame point cloud
 
-            //点云下采样
+            //Point cloud downsampling
             downSizeFilterSurf.setInputCloud(feats_undistort);
             downSizeFilterSurf.filter(*feats_down_body);
             feats_down_size = feats_down_body->points.size();
@@ -644,7 +645,7 @@ int main(int argc, char **argv)
             }
 
             /*** iterated state estimation ***/
-            Nearest_Points.resize(feats_down_size); //存储近邻点的vector
+            Nearest_Points.resize(feats_down_size); // Vector to store the nearest points
             kf.update_iterated_dyn_share_modified(LASER_POINT_COV, feats_down_body, ikdtree, Nearest_Points, NUM_MAX_ITERATIONS, extrinsic_est_en);
 
             state_point = kf.get_x();
