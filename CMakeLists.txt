@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(sfast_lio)
 
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 SET(CMAKE_BUILD_TYPE "Debug")
 
 ADD_COMPILE_OPTIONS(-std=c++14 )
