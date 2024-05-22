@@ -14,7 +14,7 @@ using namespace std;
 using namespace Eigen;
 
 #define PI_M (3.14159265358)
-#define G_m_s2 (9.81)               // Gravaty const in GuangDong/China
+#define G_m_s2 (9.81)               // Gravity constant in Guangdong, China
 #define NUM_MATCH_POINTS    (5)     
 
 #define VEC_FROM_ARRAY(v)        v[0],v[1],v[2]
@@ -36,7 +36,7 @@ M3F Eye3f(M3F::Identity());
 V3D Zero3d(0, 0, 0);
 V3F Zero3f(0, 0, 0);
 
-struct MeasureGroup     // Lidar data and imu dates for the current process
+struct MeasureGroup     // Lidar data and IMU data for the current process
 {
     MeasureGroup()
     {
@@ -66,8 +66,8 @@ auto set_pose6d(const double t, const Matrix<T, 3, 1> &a, const Matrix<T, 3, 1> 
     return move(rot_kp);
 }
 
-
-float calc_dist(PointType p1, PointType p2){
+float calc_dist(PointType p1, PointType p2)
+{
     float d = (p1.x - p2.x) * (p1.x - p2.x) + (p1.y - p2.y) * (p1.y - p2.y) + (p1.z - p2.z) * (p1.z - p2.z);
     return d;
 }
@@ -81,7 +81,7 @@ bool esti_plane(Matrix<T, 4, 1> &pca_result, const PointVector &point, const T &
     b.setOnes();
     b *= -1.0f;
 
-    //求A/Dx + B/Dy + C/Dz + 1 = 0 的参数 
+    // Solve for the parameters of A/Dx + B/Dy + C/Dz + 1 = 0
     for (int j = 0; j < NUM_MATCH_POINTS; j++)
     {
         A(j,0) = point[j].x;
@@ -92,13 +92,13 @@ bool esti_plane(Matrix<T, 4, 1> &pca_result, const PointVector &point, const T &
     Matrix<T, 3, 1> normvec = A.colPivHouseholderQr().solve(b);
 
     T n = normvec.norm();
-    //pca_result是平面方程的4个参数  /n是为了归一化
+    // pca_result contains the four parameters of the plane equation. /n is for normalization
     pca_result(0) = normvec(0) / n;
     pca_result(1) = normvec(1) / n;
     pca_result(2) = normvec(2) / n;
     pca_result(3) = 1.0 / n;
 
-    //如果几个点中有距离该平面>threshold的点 认为是不好的平面 返回false
+    // If any point among the points is farther from the plane than the threshold, consider it a bad plane and return false
     for (int j = 0; j < NUM_MATCH_POINTS; j++)
     {
         if (fabs(pca_result(0) * point[j].x + pca_result(1) * point[j].y + pca_result(2) * point[j].z + pca_result(3)) > threshold)
