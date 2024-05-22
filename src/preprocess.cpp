@@ -948,7 +948,7 @@ void Preprocess::rs_handler(const sensor_msgs::PointCloud2_<allocator<void>>::Co
   int plsize = pl_orig.points.size();
   pl_surf.reserve(plsize);
 
-  /*** These variables only works when no point timestamps given ***/
+  /*** These variables only work when no point timestamps are given ***/
   double omega_l = 0.361 * SCAN_RATE; // scan angular velocity
   std::vector<bool> is_first(N_SCANS, true);
   std::vector<double> yaw_fp(N_SCANS, 0.0);   // yaw of first scan point
@@ -964,14 +964,14 @@ void Preprocess::rs_handler(const sensor_msgs::PointCloud2_<allocator<void>>::Co
   else
   {
     given_offset_time = false;
-    double yaw_first = atan2(pl_orig.points[0].y, pl_orig.points[0].x) * 57.29578; // 记录第一个点(index 0)的yaw， to degree
+    double yaw_first = atan2(pl_orig.points[0].y, pl_orig.points[0].x) * 57.29578; // Record the yaw of the first point (index 0), in degrees
     double yaw_end = yaw_first;
-    int layer_first = pl_orig.points[0].ring; // 第一个点(index 0)的layer序号
-    for (uint i = plsize - 1; i > 0; i--)     // 倒序遍历，找到与第一个点相同layer的最后一个点
+    int layer_first = pl_orig.points[0].ring; // Layer number of the first point (index 0)
+    for (uint i = plsize - 1; i > 0; i--)     // Traverse in reverse order to find the last point with the same layer as the first point
     {
       if (pl_orig.points[i].ring == layer_first)
       {
-        yaw_end = atan2(pl_orig.points[i].y, pl_orig.points[i].x) * 57.29578; // 与第一个点相同layer的最后一个点的yaw
+        yaw_end = atan2(pl_orig.points[i].y, pl_orig.points[i].x) * 57.29578; // Yaw of the last point with the same layer as the first point
         break;
       }
     }
@@ -988,7 +988,7 @@ void Preprocess::rs_handler(const sensor_msgs::PointCloud2_<allocator<void>>::Co
     added_pt.y = pl_orig.points[i].y;
     added_pt.z = pl_orig.points[i].z;
     added_pt.intensity = pl_orig.points[i].intensity;
-    added_pt.curvature = (pl_orig.points[i].timestamp - pl_orig.points[0].timestamp) * 1000.0; // curvature unit: ms
+    added_pt.curvature = (pl_orig.points[i].timestamp - pl_orig.points[0].timestamp) * 1000.0; // Curvature unit: ms
     // std::cout << "added_pt.curvature:" << added_pt.curvature << std::endl;
 
     if (!given_offset_time)
@@ -1007,7 +1007,7 @@ void Preprocess::rs_handler(const sensor_msgs::PointCloud2_<allocator<void>>::Co
         continue;
       }
 
-      // compute offset time
+      // Compute offset time
       if (yaw_angle <= yaw_fp[layer])
       {
         added_pt.curvature = (yaw_fp[layer] - yaw_angle) / omega_l;
@@ -1033,3 +1033,4 @@ void Preprocess::rs_handler(const sensor_msgs::PointCloud2_<allocator<void>>::Co
     }
   }
 }
+
