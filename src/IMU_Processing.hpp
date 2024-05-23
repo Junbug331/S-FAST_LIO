@@ -215,6 +215,7 @@ void ImuProcess::UndistortPcl(const MeasureGroup &meas, esekfom::esekf &kf_state
                 0.5 * (head->linear_acceleration.y + tail->linear_acceleration.y),
                 0.5 * (head->linear_acceleration.z + tail->linear_acceleration.z);
 
+    // mean_acc was calculated in IMU_init, and the acceleration is normalized to unit gravity
     acc_avr  = acc_avr * G_m_s2 / mean_acc.norm(); // Adjust the acceleration by the gravity value (divided by the initialized IMU magnitude * 9.8)
 
     // If the IMU start time is earlier than the last lidar end time (because the last IMU of the previous frame is inserted at the beginning of this frame, this will occur once)
@@ -264,6 +265,15 @@ void ImuProcess::UndistortPcl(const MeasureGroup &meas, esekfom::esekf &kf_state
   auto it_pcl = pcl_out.points.end() - 1;
 
   // Traverse each IMU frame
+  // Backwards!!! end() -> begin()
+  // Pose6D_()
+  //   : offset_time(0.0) -> offs_t
+  //   , acc() -> acc_s_last
+  //   , gyr() -> angvel_last
+  //   , vel() -> imu_state.vel
+  //   , pos() -> imu_state.pos
+  //   , rot() -> imu_state.rot.matrix() 
+
   for (auto it_kp = IMUpose.end() - 1; it_kp != IMUpose.begin(); it_kp--)
   {
     auto head = it_kp - 1;
@@ -275,10 +285,21 @@ void ImuProcess::UndistortPcl(const MeasureGroup &meas, esekfom::esekf &kf_state
     acc_imu<<VEC_FROM_ARRAY(tail->acc);     // Get the IMU acceleration of the next frame
     angvel_avr<<VEC_FROM_ARRAY(tail->gyr);  // Get the IMU angular velocity of the next frame
 
+    /*
+      head (IMUpose[tau-1]) ------------ tail(IMUpose[tau])
+      R at imu[tau-1]                    acc at imu[tau]
+      vel at imu[tau-1]                  angvel at imu[tau] 
+      pos at imu[tau-1]
+    */
+
     // The point cloud was previously sorted in ascending order by time, and IMUpose was also pushed in ascending order by time
     // Starting the loop from the end of IMUpose means starting from the maximum time, so we only need to check if the point cloud time > IMU head time, and not if the point cloud time < IMU tail
     for(; it_pcl->curvature / double(1000) > head->offset_time; it_pcl --)
     {
+      /*
+                                    dt
+         head (IMUpose[tau-1]) ------------ pcl_time_i
+      */
       dt = it_pcl->curvature / double(1000) - head->offset_time;    // Time interval between the point and the start time of IMU
 
       /*    P_compensate = R_imu_e ^ T * (R_i * P_i + T_ei)    */
@@ -303,7 +324,6 @@ double T1,T2;
 void ImuProcess::Process(const MeasureGroup &meas, esekfom::esekf &kf_state, PointCloudXYZI::Ptr &cur_pcl_un_)
 {
   // T1 = omp_get_wtime();
-
   if(meas.imu.empty()) {return;};
   ROS_ASSERT(meas.lidar != nullptr);
 

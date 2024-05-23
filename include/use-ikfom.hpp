@@ -47,7 +47,8 @@ Eigen::Matrix<double, 12, 12> process_noise_cov()
     return Q;
 }
 
-// Corresponding to f in equation (2)
+// Corresponding to f in equation (2) and (3)
+// Derivative of state variable x with respect to time
 Eigen::Matrix<double, 24, 1> get_f(state_ikfom s, input_ikfom in)
 {
     // Corresponding order: velocity (3), angular velocity (3), extrinsic T (3), extrinsic rotation R (3), 
@@ -55,12 +56,14 @@ Eigen::Matrix<double, 24, 1> get_f(state_ikfom s, input_ikfom in)
     Eigen::Matrix<double, 24, 1> res = Eigen::Matrix<double, 24, 1>::Zero();
     Eigen::Vector3d omega = in.gyro - s.bg; // Input IMU angular velocity (i.e., actual measured value) - estimated bias (corresponding to the first row of the equation)
     Eigen::Vector3d a_inertial = s.rot.matrix() * (in.acc - s.ba); // Input IMU acceleration, first convert to world coordinate system (corresponding to the third row of the equation)
+    // s.rot G_R_imu[i]
+    // G_R_imu[i] * (acc[i] - ba[i])
 
     for (int i = 0; i < 3; i++)
     {
-        res(i) = s.vel[i]; // Velocity (corresponding to the second row of the equation)
-        res(i + 3) = omega[i]; // Angular velocity (corresponding to the first row of the equation)
-        res(i + 12) = a_inertial[i] + s.grav[i]; // Acceleration (corresponding to the third row of the equation)
+        res(i) = s.vel[i]; // Velocity (corresponding to the second row of the equation) => G_v_imu[i]
+        res(i + 3) = omega[i]; // Angular velocity (corresponding to the first row of the equation) => angvel_imu[i] - bg_imu[i]
+        res(i + 12) = a_inertial[i] + s.grav[i]; // Acceleration (corresponding to the third row of the equation) => G_R_imu[i] * (acc_imu[i] - ba_imu[i]) + G_g[i]
     }
 
     return res;
