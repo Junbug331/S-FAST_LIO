@@ -21,40 +21,17 @@ S-FAST_LIO is a simplified implementation of FAST_LIO (Xu, Wei, et al. "Fast-lio
 <img src="pic/avia_1.png" width = 70% height = 70%/>
 </div>
 
-## 1. Prerequisites
-### 1.1 **Ubuntu** and **ROS**
-Ubuntu >= 16.04.
+### Requirement (docker compose setup)
 
-### 1.2. **PCL && Eigen**
-PCL >= 1.8, Eigen >= 3.3.4.
-
-### 1.3. **livox_ros_driver**
-Follow [livox_ros_driver Installation](https://github.com/Livox-SDK/livox_ros_driver).
-
-Source：Add the line ``` source $Licox_ros_driver_dir$/devel/setup.bash ``` to the end of file ``` ~/.bashrc ```, where ``` $Licox_ros_driver_dir$ ``` is the directory of the livox ros driver workspace (should be the ``` ws_livox ``` directory if you completely followed the livox official document).
-
-### 1.4. **Sophus**
-```
-git clone https://github.com/strasdat/Sophus.git
-cd Sophus
-mkdir build
-cd build
-cmake ../ -DUSE_BASIC_LOGGING=ON
-make
-sudo make install
+```bash
+#install docker-compose
+sudo curl -L "https://github.com/docker/compose/releases/download/v2.15.1/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+sudo chmod +x /usr/local/bin/docker-compose
+sudo ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
+#check docker-compose version
+docker-compose --version 
 ```
 
-
-## 2. Build S-FAST_LIO
-Clone the repository and catkin_make:
-
-```
-cd ~/catkin_ws/src
-git clone https://github.com/zlwang7/S-FAST_LIO.git
-cd ../
-catkin_make
-source ~/catkin_ws/devel/setup.bash
-```
 
 ## 3. Rosbag Example
 ### 3.1 Livox Avia Rosbag
