@@ -8,9 +8,9 @@ services:
       dockerfile: ./dockerfile/s_fast_lio.Dockerfile
     tty: true
     environment: # used inside a docker.
-      - DEBUG=
       - DISPLAY=${DISPLAY}
       - QT_X11_NO_MITSHM=1
+      - DISABLE_ROS1_EOL_WARNINGS=1
     container_name: s_fast_lio_normal
     network_mode: host
     privileged: true
@@ -36,6 +36,7 @@ services:
       - DEBUG=
       - DISPLAY=${DISPLAY}
       - QT_X11_NO_MITSHM=1
+      - DISABLE_ROS1_EOL_WARNINGS=1
     container_name: s_fast_lio_cuda
     network_mode: host
     privileged: true
