@@ -32,6 +32,11 @@ sudo ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
 docker-compose --version 
 ```
 
+### Build docker container 
+```bash
+docker-compose --file docker-compose/s_fast_lio_compose.yml build s_fast_lio_cuda
+docker-compose --file docker-compose/s_fast_lio_compose.yml up s_fast_lio_cuda -d
+```
 
 ## 3. Rosbag Example
 ### 3.1 Livox Avia Rosbag
