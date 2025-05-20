@@ -96,8 +96,11 @@ namespace esekfom
 		}
 
 		// Calculate residuals and H matrix for each feature point
-		void h_share_model(dyn_share_datastruct &ekfom_data, PointCloudXYZI::Ptr &feats_down_body,
-						   KD_TREE<PointType> &ikdtree, vector<PointVector> &Nearest_Points, bool extrinsic_est)
+		void h_share_model(dyn_share_datastruct &ekfom_data, // ekfom_data: data structure for storing residuals and Jacobians
+						   PointCloudXYZI::Ptr &feats_down_body,// ikdtree : global map			
+						   KD_TREE<PointType> &ikdtree, // feats_down_body : feature points in the current frame
+						   vector<PointVector> &Nearest_Points, // Nearest_Points : nearest points in the global map
+						   bool extrinsic_est)
 		{
 			int feats_down_size = feats_down_body->points.size();
 			laserCloudOri->clear();
@@ -129,7 +132,8 @@ namespace esekfom
 				{
 					// Find the nearest neighbor plane points of point_world
 					ikdtree.Nearest_Search(point_world, NUM_MATCH_POINTS, points_near, pointSearchSqDis);
-					// Determine whether it is a valid matching point, similar to the loam series, requiring the number of map points nearest to the feature point > threshold, distance < threshold. Set to true if conditions are met
+					// Determine whether it is a valid matching point, similar to the loam series, 
+					// requiring the number of map points nearest to the feature point > threshold, distance < threshold. Set to true if conditions are met
 					point_selected_surf[i] = points_near.size() < NUM_MATCH_POINTS ? false : pointSearchSqDis[NUM_MATCH_POINTS - 1] > 5 ? false
 																																		: true;
 				}
@@ -142,7 +146,10 @@ namespace esekfom
 				if (esti_plane(pabcd, points_near, 0.1f))
 				{
 					float pd2 = pabcd(0) * point_world.x + pabcd(1) * point_world.y + pabcd(2) * point_world.z + pabcd(3); // Current point-to-plane distance
-					float s = 1 - 0.9 * fabs(pd2) / sqrt(p_body.norm());												   // If the residual is greater than the empirical threshold, consider the point valid. In short, the closer the lidar point to the origin, the stricter the requirement for the point-to-plane distance
+					float s = 1 - 0.9 * fabs(pd2) / sqrt(p_body.norm());												   // If the residual is greater than the empirical threshold, 
+																														   //    consider the point valid. 
+																														   // In short, the closer the lidar point to the origin, 
+																														   // the stricter the requirement for the point-to-plane distance
 
 					if (s > 0.9) // If the residual is greater than the threshold, consider the point valid
 					{
@@ -204,6 +211,7 @@ namespace esekfom
 				}
 
 				// Residual: point-to-plane distance
+				// member variable intensity holds point-to-plane distance
 				ekfom_data.h(i) = -norm_p.intensity;
 			}
 		}
@@ -227,7 +235,8 @@ namespace esekfom
 			return x_r;
 		}
 
-		// ESKF
+		// IESKF
+		// Note that the ESKF is not used here, but the IESKF is used instead
 		void update_iterated_dyn_share_modified(double R, PointCloudXYZI::Ptr &feats_down_body,
 												KD_TREE<PointType> &ikdtree, vector<PointVector> &Nearest_Points, int maximum_iter, bool extrinsic_est)
 		{
@@ -237,15 +246,18 @@ namespace esekfom
 			dyn_share.valid = true;
 			dyn_share.converge = true;
 			int t = 0;
-			state_ikfom x_propagated = x_; // Here, x_ and P_ are the state variables and covariance matrix after forward propagation, because the predict function is called first before this function
+			state_ikfom x_propagated = x_; // Here, x_ and P_ are the state variables and covariance matrix after forward propagation, 
+										   // because the predict function is called first before this function
 			cov P_propagated = P_;
 
 			vectorized_state dx_new = vectorized_state::Zero(); // 24x1 vector
 
+			// Jacobians(J, H) are wrt to ERROR state!
 			for (int i = -1; i < maximum_iter; i++) // maximum_iter is the maximum number of iterations for Kalman filtering
 			{
 				dyn_share.valid = true;
-				// Calculate the Jacobian, which is the derivative of the point-to-plane residual H (called h_x in the code)
+				// Calculate the Jacobian H, which is the derivative of the point-to-plane residual H (called h_x in the code)
+				// reisduals and Jacobians are stored in the dyn_share data structure
 				h_share_model(dyn_share, feats_down_body, ikdtree, Nearest_Points, extrinsic_est);
 
 				if (!dyn_share.valid)

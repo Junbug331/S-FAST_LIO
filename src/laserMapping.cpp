@@ -31,7 +31,7 @@
 
 /*** Time Log Variables ***/
 int add_point_size = 0, kdtree_delete_counter = 0;
-bool pcd_save_en = false, time_sync_en = false, extrinsic_est_en = true, path_en = true;
+bool pcd_save_en = true, time_sync_en = false, extrinsic_est_en = true, path_en = true;
 /**************************/
 
 float res_last[100000] = {0.0};
@@ -185,7 +185,8 @@ void imu_cbk(const sensor_msgs::Imu::ConstPtr &msg_in)
 
 double lidar_mean_scantime = 0.0;
 int scan_num = 0;
-//把当前要处理的LIDAR和IMU数据打包到meas
+
+// Pack the current LIDAR and IMU data into meas
 bool sync_packages(MeasureGroup &meas)
 {
     if (lidar_buffer.empty() || imu_buffer.empty())
@@ -591,7 +592,7 @@ int main(int argc, char **argv)
 
     /*** ROS subscribe initialization ***/
     ros::Subscriber sub_pcl = p_pre->lidar_type == AVIA ? nh.subscribe(lid_topic, 200000, livox_pcl_cbk) : nh.subscribe(lid_topic, 200000, standard_pcl_cbk);
-    ros::Subscriber sub_imu = nh.subscribe(imu_topic, 200000, imu_cbk);
+    ros::Subscriber sub_imu = nh.subscribe(imu_topic, 200000, imu_cbk); // push imu raw data to imu_buffer
     ros::Publisher pubLaserCloudFull = nh.advertise<sensor_msgs::PointCloud2>("/cloud_registered", 100000);
     ros::Publisher pubLaserCloudFull_body = nh.advertise<sensor_msgs::PointCloud2>("/cloud_registered_body", 100000);
     ros::Publisher pubLaserCloudEffect = nh.advertise<sensor_msgs::PointCloud2>("/cloud_effected", 100000);

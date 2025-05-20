@@ -307,8 +307,15 @@ void ImuProcess::UndistortPcl(const MeasureGroup &meas, esekfom::esekf &kf_state
       M3D R_i(R_imu * Sophus::SO3d::exp(angvel_avr * dt).matrix() );   // Rotation at the point it_pcl's time: IMU rotation matrix of the previous frame * exp(next frame angular velocity * dt)   
       
       V3D P_i(it_pcl->x, it_pcl->y, it_pcl->z);   // Position at the point's time (in lidar coordinate system)
+      // T_ei represents the translation needed to account for the movement of the sensor from the time the point was captured to the end of the lidar scan. 
+      // imu_state.pos: The position of the IMU at the end of the scan.
       V3D T_ei(pos_imu + vel_imu * dt + 0.5 * acc_imu * dt * dt - imu_state.pos);   // From the point's position in the world to the end position of the lidar
       V3D P_compensate = imu_state.offset_R_L_I.matrix().transpose() * (imu_state.rot.matrix().transpose() * (R_i * (imu_state.offset_R_L_I.matrix() * P_i + imu_state.offset_T_L_I) + T_ei) - imu_state.offset_T_L_I);
+      // imu_state.offset_R_L_I.matrix() * P_i + imu_state.offset_T_L_I : transform lidar point to IMU coordinate system (-> IMU Point)
+      // R_i * (imu_state.offset_R_L_I.matrix() * P_i + imu_state.offset_T_L_I) : Transform IMU Point to World Frame at Point Time:
+      // ... + T_ei : Add Translational Component (displacement)
+      // imu_state.rot.matrix().transpose() * ...  - imu_state.offset_T_L_I : Transform Back to IMU Frame at End of Scan
+      // imu_state.offset_R_L_I.matrix().transpose() * (... - imu_state.offset_T_L_I) : Transform back to Lidar frame
 
       it_pcl->x = P_compensate(0);
       it_pcl->y = P_compensate(1);
@@ -346,11 +353,11 @@ void ImuProcess::Process(const MeasureGroup &meas, esekfom::esekf &kf_state, Poi
       cov_acc = cov_acc_scale;
       cov_gyr = cov_gyr_scale;
       ROS_INFO("IMU Initial Done");
-    }
 
+    }
     return;
   }
-
+  // else
   UndistortPcl(meas, kf_state, *cur_pcl_un_); 
 
   // T2 = omp_get_wtime();

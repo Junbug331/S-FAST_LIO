@@ -1,0 +1,52 @@
+version: "3"
+
+services:
+  s_fast_lio_normal:
+    image: junbug/s_fast_lio:latest
+    build:
+      context: ../
+      dockerfile: ./dockerfile/s_fast_lio.Dockerfile
+    tty: true
+    environment: # used inside a docker.
+      - DEBUG=
+      - DISPLAY=${DISPLAY}
+      - ROS_MASTER_URI="http://127.0.0.1:11311"
+      - ROS_HOSTNAME="127.0.0.1"
+      - QT_X11_NO_MITSHM=1
+    container_name: s_fast_lio_normal
+    network_mode: host
+    privileged: true
+    volumes:
+      - /home/${USERNAME}/dataset:/root/dataset
+      - ../:/root/catkin_ws/src/S_FAST_LIO/
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      - /dev:/dev
+      # connect devices
+    command: bash
+  s_fast_lio_cuda:
+    image: junbug331/s_fast_lio:latest
+    build:
+      context: ../
+      dockerfile: ./dockerfile/s_fast_lio.Dockerfile
+    tty: true
+    runtime: nvidia
+    environment: # used inside a docker.
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=all
+      - __NV_PRIME_RENDER_OFFLOAD=1
+      - __GLX_VENDOR_LIBRARY_NAME=nvidia
+      - DEBUG=
+      - DISPLAY=${DISPLAY}
+      - ROS_MASTER_URI="http://127.0.0.1:11311"
+      - ROS_HOSTNAME="127.0.0.1"
+      - QT_X11_NO_MITSHM=1
+    container_name: s_fast_lio_cuda
+    network_mode: host
+    privileged: true
+    volumes:
+      - /home/${USERNAME}/dataset:/root/dataset
+      - ../:/root/catkin_ws/src/S_FAST_LIO/
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      - /dev:/dev
+      # connect devices
+    command: bash
