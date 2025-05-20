@@ -1,4 +1,22 @@
 # S-FAST_LIO
+
+### Requirement (docker compose setup)
+```bash
+#install docker-compose
+sudo curl -L "https://github.com/docker/compose/releases/download/v2.15.1/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+sudo chmod +x /usr/local/bin/docker-compose
+sudo ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
+#check docker-compose version
+docker-compose --version 
+```
+
+### Build docker container 
+```bash
+docker-compose --file docker-compose/s_fast_lio_compose.yml build s_fast_lio_cuda
+docker-compose --file docker-compose/s_fast_lio_compose.yml up s_fast_lio_cuda -d
+```
+
+
 ## Simplified Implementation of FAST_LIO
 
 S-FAST_LIO is a simplified implementation of FAST_LIO (Xu, Wei, et al. "Fast-lio2: Fast direct lidar-inertial odometry."), which is modified from [FAST_LIO](https://github.com/hku-mars/FAST_LIO). This code is clean and accessible. It is a reference material for SLAM beginners.The main modifications are as follows:
@@ -20,23 +38,6 @@ S-FAST_LIO is a simplified implementation of FAST_LIO (Xu, Wei, et al. "Fast-lio
 <div align=center>
 <img src="pic/avia_1.png" width = 70% height = 70%/>
 </div>
-
-### Requirement (docker compose setup)
-
-```bash
-#install docker-compose
-sudo curl -L "https://github.com/docker/compose/releases/download/v2.15.1/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-sudo chmod +x /usr/local/bin/docker-compose
-sudo ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
-#check docker-compose version
-docker-compose --version 
-```
-
-### Build docker container 
-```bash
-docker-compose --file docker-compose/s_fast_lio_compose.yml build s_fast_lio_cuda
-docker-compose --file docker-compose/s_fast_lio_compose.yml up s_fast_lio_cuda -d
-```
 
 ## 3. Rosbag Example
 ### 3.1 Livox Avia Rosbag
